@@ -95,9 +95,8 @@ cards.forEach(card => {
 
     const data = await loadWords();
 
-    const day = getDayOfYear();
-    const index = day % data.length;
-    const todayWord = data[index];
+    const randomIndex = Math.floor(Math.random() * data.length);
+    const todayWord = data[randomIndex];
 
     // ซ่อนการ์ดอื่น
     cards.forEach(c => {
