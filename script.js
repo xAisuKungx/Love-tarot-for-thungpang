@@ -14,9 +14,9 @@ function createStars(count){
     stars.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 2.5 + 0.5, // ขนาดเล็กมาก
-      speed: Math.random() * 0.3 + 0.05,
-      alpha: Math.random() * 0.6 + 0.4
+      r: Math.random() * 1.8 + 0.3,
+      speed: Math.random() * 0.25 + 0.05,
+      alpha: Math.random() * 0.4 + 0.6
     });
   }
 }
@@ -29,22 +29,18 @@ function drawStars(){
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
 
-    // ⭐ สีขาว + วิบวับ
     ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
     ctx.fill();
 
-    // เคลื่อนลงช้า ๆ
     s.y += s.speed;
 
-    // reset ถ้าหลุดจอ
     if(s.y > canvas.height){
       s.y = 0;
       s.x = Math.random() * canvas.width;
     }
 
-    // twinkle
-    s.alpha += (Math.random() - 0.5) * 0.05;
-    if(s.alpha < 0.1) s.alpha = 0.1;
+    s.alpha += (Math.random() - 0.5) * 0.02;
+    if(s.alpha < 0.2) s.alpha = 0.2;
     if(s.alpha > 1) s.alpha = 1;
   }
 
@@ -53,45 +49,39 @@ function drawStars(){
 
 window.addEventListener("resize", () => {
   resize();
-  createStars(120); // ปรับจำนวนดาวตรงนี้
+  createStars(140);
 });
 
 resize();
-createStars(120);
+createStars(140);
 drawStars();
+
+
+// =======================
+// TAROT SYSTEM
+// =======================
+
 const cards = document.querySelectorAll(".card");
-
-const intros =
-  document.querySelectorAll(".intro");
-
-const result =
-  document.getElementById("result");
-
-const linesEl =
-  document.getElementById("lines");
+const intros = document.querySelectorAll(".intro");
+const result = document.getElementById("result");
+const linesEl = document.getElementById("lines");
 
 let opened = false;
+let loading = false;
 
 async function loadWords(){
+  if (window.wordCache) return window.wordCache;
 
-  const res =
-    await fetch("365word.json");
-
-  return await res.json();
+  const res = await fetch("365word.json");
+  window.wordCache = await res.json();
+  return window.wordCache;
 }
 
 function getDayOfYear(){
-
   const now = new Date();
-
-  const start =
-    new Date(now.getFullYear(), 0, 0);
-
+  const start = new Date(now.getFullYear(), 0, 0);
   const diff = now - start;
-
-  const oneDay =
-    1000 * 60 * 60 * 24;
-
+  const oneDay = 1000 * 60 * 60 * 24;
   return Math.floor(diff / oneDay);
 }
 
@@ -99,82 +89,98 @@ cards.forEach(card => {
 
   card.addEventListener("click", async () => {
 
-    if(opened) return;
-
+    if(opened || loading) return;
+    loading = true;
     opened = true;
 
-    const data =
-      await loadWords();
+    const data = await loadWords();
 
-    const day =
-      getDayOfYear();
-
-    const index =
-      day % data.length;
-
-    const todayWord =
-      data[index];
+    const day = getDayOfYear();
+    const index = day % data.length;
+    const todayWord = data[index];
 
     // ซ่อนการ์ดอื่น
     cards.forEach(c => {
-
       if(c !== card){
-
         c.classList.add("fade-out");
       }
     });
 
     // ซ่อน title/subtitle
     intros.forEach(el => {
-
       el.classList.add("fade-out");
     });
 
-    // การ์ดลอยกลางจอ
+    // =========================
+    // STEP 1: จับตำแหน่งจริงก่อนลอย
+    // =========================
     setTimeout(() => {
 
-      card.classList.add("selected");
+      const rect = card.getBoundingClientRect();
 
-    }, 300);
+      card.style.setProperty("--start-x", rect.left + "px");
+      card.style.setProperty("--start-y", rect.top + "px");
 
-    // พลิกการ์ด
+      card.classList.add("selected", "lifting");
+
+    }, 250);
+
+    // =========================
+    // STEP 2: ลอยขึ้นไปด้านบน
+    // =========================
     setTimeout(() => {
 
-      const title =
-        card.querySelector(".card-title");
+      card.style.left = "50%";
+      card.style.top = "25%";
+      card.style.transform = "translate(-50%, -50%) scale(1.35)";
 
-      title.innerHTML =
-        `THE<br>${todayWord.word}`;
+    }, 550);
+
+    // =========================
+    // STEP 3: spin
+    // =========================
+    setTimeout(() => {
+
+      card.classList.remove("lifting");
+      card.classList.add("spinning");
+
+    }, 900);
+
+    // =========================
+    // STEP 4: flip
+    // =========================
+    setTimeout(() => {
+
+      card.classList.remove("spinning");
+
+      const title = card.querySelector(".card-title");
+      title.innerHTML = `THE<br>${todayWord.word}`;
 
       card.classList.add("flipped");
 
-    }, 1200);
+    }, 2200);
 
-    // แสดงข้อความ
+    // =========================
+    // STEP 5: result
+    // =========================
     setTimeout(() => {
 
       result.classList.remove("hidden");
-
       linesEl.innerHTML = "";
 
-      todayWord.lines.forEach(
-        ([letter, text], i) => {
+      todayWord.lines.forEach(([letter, text], i) => {
 
-          const div =
-            document.createElement("div");
+        const div = document.createElement("div");
+        div.className = "line";
+        div.style.animationDelay = `${i * 0.25}s`;
+        div.innerHTML = `<strong>${letter}</strong> — ${text}`;
 
-          div.className = "line";
-
-          div.style.animationDelay =
-            `${i * .25}s`;
-
-          div.innerHTML =
-            `<strong>${letter}</strong> — ${text}`;
-
-          linesEl.appendChild(div);
+        linesEl.appendChild(div);
       });
 
-    }, 2200);
+      loading = false;
+
+    }, 2500);
 
   });
 
