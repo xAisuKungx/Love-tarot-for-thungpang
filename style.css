@@ -14,7 +14,8 @@ body{
 
   min-height:100vh;
 
-  overflow:hidden;
+  overflow-x:hidden;
+  overflow-y:auto;
 
   display:flex;
   justify-content:center;
@@ -50,6 +51,7 @@ body{
   max-width:1200px;
 
   padding-top:60px;
+  padding-bottom:120px;
 
   display:flex;
   flex-direction:column;
@@ -128,6 +130,10 @@ body{
 /* faces */
 /* ===================== */
 
+/* ===================== */
+/* faces */
+/* ===================== */
+
 .card-front,
 .card-back{
 
@@ -140,16 +146,17 @@ body{
 
   backface-visibility:hidden;
 
-  display:flex;
-  justify-content:center;
-  align-items:center;
-
   border:1px solid rgba(255,255,255,.15);
 
   overflow:hidden;
 }
 
 .card-front{
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
   background:
     url("bg_card.png") center / cover no-repeat,
     linear-gradient(145deg, #853887, #090909);
@@ -159,11 +166,22 @@ body{
 }
 
 .card-back{
+
   background:
     url("bg_card.png") center / cover no-repeat,
     linear-gradient(145deg, #853887, #090909);
 
   transform:rotateY(180deg);
+
+  position:absolute;
+
+  inset:0;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
 
   padding:20px;
 
@@ -171,8 +189,46 @@ body{
 }
 
 .card-title{
-  font-size:1.5rem;
-  line-height:1.4;
+
+  position:absolute;
+
+  inset:0;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:center;
+
+  align-items:center;
+
+  width:100%;
+
+  padding:0 12px;
+
+  text-align:center;
+
+  line-height:1.1;
+}
+
+.the-word{
+
+  font-size:0.8rem;
+
+  letter-spacing:2px;
+
+  margin-bottom:6px;
+}
+
+.main-word{
+
+  display:block;
+
+  width:100%;
+
+  font-weight:bold;
+
+  white-space:nowrap;
 }
 
 /* ===================== */
@@ -382,4 +438,72 @@ body{
   z-index:0;
 
   pointer-events:none;
+}
+
+.share-btn{
+
+  margin-top:25px;
+
+  padding:12px 22px;
+
+  border:none;
+  border-radius:999px;
+
+  background:linear-gradient(135deg,#ff6bd6,#9d7bff);
+
+  color:white;
+
+  font-size:1rem;
+  font-weight:bold;
+
+  cursor:pointer;
+
+  transition:.25s;
+}
+
+.share-btn:hover{
+  transform:scale(1.05);
+}
+
+.force-capture .line{
+
+  opacity:1 !important;
+
+  animation:none !important;
+
+  transform:none !important;
+
+  color:#fff !important;
+
+  text-shadow:
+    0 0 8px rgba(255,255,255,.35);
+
+}
+
+.capture-mode *{
+
+  animation:none !important;
+
+  transition:none !important;
+
+}
+
+.capture-mode .line{
+
+  animation:none !important;
+
+  transition:none !important;
+
+  opacity:1 !important;
+
+  transform:none !important;
+
+}
+
+.capture-mode .result{
+
+  animation:none !important;
+
+  opacity:1 !important;
+
 }
