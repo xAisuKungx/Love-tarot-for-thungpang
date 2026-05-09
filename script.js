@@ -153,7 +153,27 @@ cards.forEach(card => {
       card.classList.remove("spinning");
 
       const title = card.querySelector(".card-title");
-      title.innerHTML = `THE<br>${todayWord.word}`;
+
+      title.innerHTML = `
+        <span class="the-word">THE</span>
+        <span class="main-word">${todayWord.word}</span>
+      `;
+
+      const mainWord = title.querySelector(".main-word");
+
+      // เริ่มจากขนาดใหญ่สุด
+      let size = 1.4;
+
+      mainWord.style.fontSize = size + "rem";
+
+      // ถ้าล้นการ์ด → ค่อยลด
+      while(
+        mainWord.scrollWidth > mainWord.clientWidth &&
+        size > 0.45
+      ){
+        size -= 0.05;
+        mainWord.style.fontSize = size + "rem";
+      }
 
       card.classList.add("flipped");
 
@@ -182,5 +202,68 @@ cards.forEach(card => {
     }, 2500);
 
   });
+
+});
+
+const shareBtn = document.getElementById("shareBtn");
+
+shareBtn.addEventListener("click", async () => {
+
+  document.body.classList.add("capture-mode");
+
+  shareBtn.style.opacity = "0";
+  shareBtn.style.pointerEvents = "none";
+
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  const canvas = await html2canvas(document.body,{
+    backgroundColor:"#090909",
+    scale:2
+  });
+
+  document.body.classList.remove("capture-mode");
+
+  shareBtn.style.opacity = "1";
+  shareBtn.style.pointerEvents = "auto";
+
+  const dataUrl = canvas.toDataURL("image/png");
+
+  // ===== มือถือ =====
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+
+    const res = await fetch(dataUrl);
+
+    const blob = await res.blob();
+
+    const file = new File(
+      [blob],
+      "love-tarot.png",
+      { type:"image/png" }
+    );
+
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+
+      await navigator.share({
+        files:[file],
+        title:"Love Tarot",
+        text:"My Love Card Tonight ✨"
+      });
+
+      return;
+    }
+  }
+
+  // ===== PC โหลดไฟล์เลย =====
+  const link = document.createElement("a");
+
+  link.href = dataUrl;
+
+  link.download = "love-tarot.png";
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  document.body.removeChild(link);
 
 });
